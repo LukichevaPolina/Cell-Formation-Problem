@@ -1,56 +1,77 @@
 import random
 
 
-def ReadFile(path):
-    with open(path) as f:
-        m, p = [int(num) for num in f.readline().split()]
-        matrix_mp = [[0] * p for i in range(m)]
-        for i in range(m):
-            list_parts = [int(num) for num in f.readline().split()]
-            machine = list_parts[0]
-            for part in list_parts[1:]:
-                matrix_mp[machine - 1][part - 1] = 1
-        return matrix_mp
+class GeneralVND:
+    def __init__(self, path):
+        self.matrix = self.readFile(path)
+        self.zeroes = self.countZeroes()
+        self.ones = self.countOnes()
+        self.solution = [[]]
+
+    def readFile(path):
+        with open(path) as f:
+            m, p = [int(num) for num in f.readline().split()]
+            matrix_mp = [[0] * p for i in range(m)]
+            for i in range(m):
+                list_parts = [int(num) for num in f.readline().split()]
+                machine = list_parts[0]
+                for part in list_parts[1:]:
+                    matrix_mp[machine - 1][part - 1] = 1
+            return matrix_mp
 
 
-def Solve(matrix_mp):
-    return 0
+    def solve(matrix_mp):
+        return 0
 
 
-def GenerateConfigsUniform(min_dimension, machines, parts):
-    cells_number = random.randint(1, min_dimension)
-    m_decomposition = Decomposition(cells_number, machines)
-    p_decomposition = Decomposition(cells_number, parts)
-    solution = [Splitting(m_decomposition, machines), Splitting(p_decomposition, parts)]
-    return solution
+    def efficiency(matrix_mp, solution):
+        zeroes = 0
+        ones = 0
+        for i in range(len(matrix_mp)):
+            for j in range(len(matrix_mp[0])):
+                if matrix[i][j] == 1:
+                    zeroes += 1
+                else:
+                    ones += 1
+
+        return 0
 
 
-# рандомно раскладываем по ячейкам станки/детали
-def Splitting(decomposition, length):
-    cells_num = [0]*length
-    for i in range(0, len(decomposition)):
-        for j in range(1, decomposition[i] + 1):
-            part = random.randint(0, length - 1)
-            while cells_num[part] != 0:
+    def generateConfigsUniform(machines, parts):
+        min_dimension = min(machines, parts)
+        cells_number = random.randint(1, min_dimension)
+        m_decomposition = decomposition(cells_number, machines)
+        p_decomposition = decomposition(cells_number, parts)
+        solution = [splitting(m_decomposition, machines), splitting(p_decomposition, parts)]
+        return solution
+
+
+    # рандомно раскладываем по ячейкам станки/детали
+    def splitting(decomposition, length):
+        cells_num = [0]*length
+        for i in range(0, len(decomposition)):
+            for j in range(1, decomposition[i] + 1):
                 part = random.randint(0, length - 1)
-            cells_num[part] = i + 1
-    return cells_num
+                while cells_num[part] != 0:
+                    part = random.randint(0, length - 1)
+                cells_num[part] = i + 1
+        return cells_num
 
 
-# разложение на terms_number числа number
-def Decomposition(terms_number, number):
-    size_configs = [number]
-    for i in range(terms_number - 1):
-        if max(size_configs) == 1:
-            border = 1
-        else:
-            border = max(size_configs) - 1
-        new_elem = random.randint(1, border)
-        size_configs[size_configs.index(max(size_configs))] -= new_elem
-        size_configs.append(new_elem)
+    # разложение на terms_number числа number
+    def Decomposition(terms_number, number):
+        size_configs = [number]
+        for i in range(terms_number - 1):
+            if max(size_configs) == 1:
+                border = 1
+            else:
+                border = max(size_configs) - 1
+            new_elem = random.randint(1, border)
+            size_configs[size_configs.index(max(size_configs))] -= new_elem
+            size_configs.append(new_elem)
 
-    return size_configs
+        return size_configs
 
 
 matrix = ReadFile('test.txt')
-print(GenerateConfigsUniform(8, 8, 16))
+print(GenerateConfigsUniform(len(matrix), len(matrix[0])))
