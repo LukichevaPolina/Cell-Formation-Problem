@@ -1,5 +1,6 @@
 import random
 
+
 def ReadFile(path):
     with open(path) as f:
         m, p = [int(num) for num in f.readline().split()]
@@ -13,54 +14,38 @@ def ReadFile(path):
 
 
 def Solve(matrix_mp):
-    min_cells, max_cells = FindOptimalCellRange(matrix)
+    return 0
 
 
-def  FindOptimalCellRange(matrix_mp):
-    min_dimension = min(len(matrix), len(matrix[0]))
-    configs_number = 500
-    configs = GenerateConfigs(matrix_mp, 2, min_dimension, configs_number, len(matrix), len(matrix[0]))
-
-    return[]
-
-
-def GenerateConfigs(min_cells, max_cells, configs_number, machines, parts):
-    configs = {}
-    for cells_number in range(min_cells, max_cells + 1):
-        generated = GenerateConfigsUniform(cells_number, configs_number)
-    return[]
-
-
-def GenerateConfigsUniform(min_dimension, cells_number, configs_number, machines, parts):
-    configs_number = random.randint(1, configs_number)
+def GenerateConfigsUniform(min_dimension, machines, parts):
+    cells_number = random.randint(1, min_dimension)
     m_decomposition = Decomposition(cells_number, machines)
     p_decomposition = Decomposition(cells_number, parts)
-    solution = [[0]*machines, [0]*parts]
-    for i in range(cells_number):
-        m = random.randint(0, machines)
-        p = random.randint(0, parts)
-        while solution[0][m] and solution[1][p]:
-            m = random.randint(0, machines)
-            p = random.randint(0, parts)
-            print(m, p)
-        solution[0][m] = i
-        solution[1][p] = i
+    solution = [Splitting(m_decomposition, machines), Splitting(p_decomposition, parts)]
     return solution
 
 
-def CMHeuristic():
-    return[]
-
-
-def ImproveSolution():
-    return[]
+# рандомно раскладываем по ячейкам станки/детали
+def Splitting(decomposition, length):
+    cells_num = [0]*length
+    for i in range(0, len(decomposition)):
+        for j in range(1, decomposition[i] + 1):
+            part = random.randint(0, length - 1)
+            while cells_num[part] != 0:
+                part = random.randint(0, length - 1)
+            cells_num[part] = i + 1
+    return cells_num
 
 
 # разложение на terms_number числа number
 def Decomposition(terms_number, number):
     size_configs = [number]
-    for i in range(terms_number):
-        new_elem = random.randint(1, max(size_configs) - 1)
+    for i in range(terms_number - 1):
+        if max(size_configs) == 1:
+            border = 1
+        else:
+            border = max(size_configs) - 1
+        new_elem = random.randint(1, border)
         size_configs[size_configs.index(max(size_configs))] -= new_elem
         size_configs.append(new_elem)
 
@@ -68,4 +53,4 @@ def Decomposition(terms_number, number):
 
 
 matrix = ReadFile('test.txt')
-print(GenerateConfigsUniform(5,3,10,5,4))
+print(GenerateConfigsUniform(8, 8, 16))
