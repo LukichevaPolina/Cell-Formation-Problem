@@ -17,30 +17,39 @@ class GeneralVND:
 
     def __init__(self, path):
         self.matrix = readFile(path)
-        self.zeroes = self.countZeroes()
         self.ones = self.countOnes()
         self.solution = [[]]
         self.machines = len(self.matrix)
         self.parts = len(self.matrix[0])
+        self.efficiency = 0
+        self.cells = 0
 
-    def efficiency(self):
+    def countEfficiency(self):
+        ones_in, zeroes_in = 0, 0
+        for i in range(self.machines):
+            for j in range(self.parts):
+                if self.solution[i] == self.solution[j]:
+                    if self.matrix[i][j] == 1:
+                        ones_in += 1
+                    else:
+                        zeroes_in += 1
+        self.efficiency = ones_in / (self.ones + zeroes_in)
+
+    def countOnes(self):
         zeroes = 0
         ones = 0
-        for i in range(len(self.matrix)):
-            for j in range(len(self.matrix[0])):
+        for i in range(self.machines):
+            for j in range(self.parts):
                 if self.matrix[i][j] == 1:
-                    zeroes += 1
-                else:
                     ones += 1
-        return 0
+        return ones
 
-    def generateConfigsUniform(self, machines, parts):
-        min_dimension = min(machines, parts)
-        cells_number = random.randint(1, min_dimension)
-        m_decomposition = self.decomposition(cells_number, machines)
-        p_decomposition = self.decomposition(cells_number, parts)
-        solution = [self.splitting(self, m_decomposition, machines), self.splitting(self, p_decomposition, parts)]
-        return solution
+    def generateConfigsUniform(self):
+        min_dimension = min(self.machines, self.parts)
+        self.cells = random.randint(1, min_dimension)
+        m_decomposition = self.decomposition(self.cells, self.machines)
+        p_decomposition = self.decomposition(self.cells, self.parts)
+        self.solution = [self.splitting(self, m_decomposition, self.machines), self.splitting(self, p_decomposition, self.parts)]
 
     # рандомно раскладываем по ячейкам станки/детали
     def splitting(self, decomp, length):
