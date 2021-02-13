@@ -108,6 +108,53 @@ class GeneralVNS:
         efficiency = float(ones_in) / (self.ones + zeroes_in)
         return efficiency
 
+    def shaking(self):
+        if self.cells == 1:
+            self.divide()
+        else:
+            merge_or_divide = random.randint(0, 1)
+            if merge_or_divide == 1:
+                self.merge()
+            else:
+                self.divide()
+
+    def divide(self):
+        if self.cells == 1:
+            boarder = 1
+        else:
+            boarder = self.cells - 1
+        cell_to_divide = random.randint(1, boarder)
+        m_in_cell = self.elementsInCell(self.machines, cell_to_divide, 0)
+        p_in_cell = self.elementsInCell(self.parts, cell_to_divide, 1)
+        if len(m_in_cell) == 1 or len(p_in_cell) == 1:
+            return
+        self.cells += 1
+        machine_id_to_divide = random.randint(1, len(m_in_cell) - 1)
+        part_id_to_divide = random.randint(1, len(p_in_cell) - 1)
+        for i in m_in_cell[machine_id_to_divide:]:
+            self.solution[0][i] = self.cells
+        for i in p_in_cell[part_id_to_divide:]:
+            self.solution[1][i] = self.cells
+
+    def merge(self):
+        cells_to_merge = sorted([random.randint(1, self.cells), random.randint(1, self.cells)])
+        while cells_to_merge[0] == cells_to_merge[1]:
+            cells_to_merge = sorted([random.randint(1, self.cells), random.randint(1, self.cells)])
+        self.cells -= 1
+        for i in range(self.machines):
+            if self.solution[0][i] == cells_to_merge[1]:
+                self.solution[0][i] = cells_to_merge[0]
+        for i in range(self.parts):
+            if self.solution[1][i] == cells_to_merge[1]:
+                self.solution[1][i] = cells_to_merge[0]
+
+    def elementsInCell(self, element, cell, id):
+        list_elements = []
+        for i in range(element):
+            if self.solution[id][i] == cell:
+                list_elements.append(i)
+        return list_elements
+
     def improve_solution(self):
         self.count_efficiency()
         d_machine = 1
@@ -159,11 +206,27 @@ class GeneralVNS:
             self.count_efficiency()
 
 
+
 matrix = read_file('carrie28.txt')
 vns = GeneralVNS(matrix, count_ones(matrix))
+
 vns.generate_configs_uniform()
 vns.count_efficiency()
-print(vns.efficiency)
+new_vns = GeneralVNS(matrix, count_ones(matrix))
+for j in range(200):
+    new_vns.generate_configs_uniform()
+    new_vns.count_efficiency()
+    if new_vns.efficiency > vns.efficiency:
+        vns.solution = deepcopy(new_vns.solution)
+        vns.cells = new_vns.cells
+        vns.efficiency = new_vns.efficiency
 vns.improve_solution()
 vns.count_efficiency()
-print(vns.efficiency)
+new_vns = deepcopy(vns)
+for i in range(20):
+    new_vns.shaking()
+    new_vns.improve_solution()
+    new_vns.count_efficiency()
+    if new_vns.efficiency > vns.efficiency:
+        vns = deepcopy(new_vns)
+        print(vns.efficiency, vns.solution)
