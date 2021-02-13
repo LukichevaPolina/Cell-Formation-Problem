@@ -18,7 +18,7 @@ def count_ones(matrix_):
     zeroes = 0
     ones = 0
     for i in range(len(matrix_)):
-        for j in range(len([0])):
+        for j in range(len(matrix[0])):
             if matrix_[i][j] == 1:
                 ones += 1
     return ones
