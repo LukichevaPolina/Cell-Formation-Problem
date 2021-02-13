@@ -130,7 +130,7 @@ class GeneralVNS:
                     new_eff = self.count_new_efficiency_p(part, cell)
                     if new_eff > self.efficiency:
                         d_parts = new_eff - self.efficiency
-                        part_from = self.solution[1][part]
+                        part_from = part
                         part_to = cell
             machine_from = 0
             machine_to = 0
@@ -148,7 +148,7 @@ class GeneralVNS:
                     new_eff = self.count_new_efficiency_m(machine, cell)
                     if new_eff > self.efficiency:
                         d_machine = new_eff - self.efficiency
-                        machine_from = self.solution[0][machine]
+                        machine_from = machine
                         machine_to = cell
             if d_machine == 0 and d_parts == 0:
                 break
@@ -156,9 +156,10 @@ class GeneralVNS:
                 self.solution[1][part_from] = part_to
             else:
                 self.solution[0][machine_from] = machine_to
+            self.count_efficiency()
 
 
-matrix = read_file('test.txt')
+matrix = read_file('carrie28.txt')
 vns = GeneralVNS(matrix, count_ones(matrix))
 vns.generate_configs_uniform()
 vns.count_efficiency()
