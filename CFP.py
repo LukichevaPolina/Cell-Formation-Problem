@@ -1,7 +1,8 @@
 import random
+from copy import copy, deepcopy
 
 
-def readFile(path):
+def read_file(path):
     with open(path) as f:
         m, p = [int(num) for num in f.readline().split()]
         matrix_mp = [[0] * p for i in range(m)]
@@ -13,12 +14,12 @@ def readFile(path):
         return matrix_mp
 
 
-def countOnes(matrix):
+def count_ones(matrix_):
     zeroes = 0
     ones = 0
-    for i in range(len(matrix)):
-        for j in range(len(matrix[0])):
-            if matrix[i][j] == 1:
+    for i in range(len(matrix_)):
+        for j in range(len([0])):
+            if matrix_[i][j] == 1:
                 ones += 1
     return ones
 
@@ -34,7 +35,7 @@ class GeneralVNS:
         self.efficiency = 0.0
         self.cells = 0
 
-    def countEfficiency(self):
+    def count_efficiency(self):
         ones_in, zeroes_in = 0, 0
         for i in range(self.machines):
             for j in range(self.parts):
@@ -45,7 +46,7 @@ class GeneralVNS:
                         zeroes_in += 1
         self.efficiency = float(ones_in) / (self.ones + zeroes_in)
 
-    def generateConfigsUniform(self):
+    def generate_configs_uniform(self):
         min_dimension = min(self.machines, self.parts)
         self.cells = random.randint(1, min_dimension)
         m_decomposition = self.decomposition(self.cells, self.machines)
@@ -77,63 +78,87 @@ class GeneralVNS:
 
         return size_configs
 
-    def shaking(self):
-        print(self.cells)
-        if self.cells == 1:
-            self.divide()
-        else:
-            merge_or_divide = random.randint(0, 1)
-            if merge_or_divide == 1:
-                self.merge()
-            else:
-                self.divide()
-
-    def divide(self):
-        if self.cells == 1:
-            boarder = 1
-        else:
-            boarder = self.cells - 1
-        cell_to_divide = random.randint(1, boarder)
-        m_in_cell = self.elementsInCell(self.machines, cell_to_divide, 0)
-        p_in_cell = self.elementsInCell(self.parts, cell_to_divide, 1)
-        if len(m_in_cell) == 1 or len(p_in_cell) == 1:
-            return
-        self.cells += 1
-        machine_id_to_divide = random.randint(1, len(m_in_cell) - 1)
-        part_id_to_divide = random.randint(1, len(p_in_cell) - 1)
-        for i in m_in_cell[machine_id_to_divide:]:
-            self.solution[0][i] = self.cells
-        for i in p_in_cell[part_id_to_divide:]:
-            self.solution[1][i] = self.cells
-        print(self.solution)
-
-    def merge(self):
-        cells_to_merge = sorted([random.randint(1, self.cells), random.randint(1, self.cells)])
-        while cells_to_merge[0] == cells_to_merge[1]:
-            cells_to_merge = sorted([random.randint(1, self.cells), random.randint(1, self.cells)])
-        self.cells -= 1
+    def count_new_efficiency_p(self, part, cell):
+        ones_in, zeroes_in = 0, 0
+        new_solution = [[]]
+        new_solution = deepcopy(self.solution)
+        new_solution[1][part] = cell
         for i in range(self.machines):
-            if self.solution[0][i] == cells_to_merge[1]:
-                self.solution[0][i] = cells_to_merge[0]
-        for i in range(self.parts):
-            if self.solution[1][i] == cells_to_merge[1]:
-                self.solution[1][i] = cells_to_merge[0]
+            for j in range(self.parts):
+                if new_solution[0][i] == new_solution[1][j]:
+                    if self.matrix[i][j] == 1:
+                        ones_in += 1
+                    else:
+                        zeroes_in += 1
+        efficiency = float(ones_in) / (self.ones + zeroes_in)
+        return efficiency
 
-    def elementsInCell(self, element, cell, id):
-        list_elements = []
-        for i in range(element):
-            if self.solution[id][i] == cell:
-                list_elements.append(i)
-        return list_elements
+    def count_new_efficiency_m(self, machine, cell):
+        ones_in, zeroes_in = 0, 0
+        new_solution = [[]]
+        new_solution = deepcopy(self.solution)
+        new_solution[0][machine] = cell
+        for i in range(self.machines):
+            for j in range(self.parts):
+                if new_solution[0][i] == new_solution[1][j]:
+                    if self.matrix[i][j] == 1:
+                        ones_in += 1
+                    else:
+                        zeroes_in += 1
+        efficiency = float(ones_in) / (self.ones + zeroes_in)
+        return efficiency
+
+    def improve_solution(self):
+        self.count_efficiency()
+        d_machine = 1
+        d_parts = 1
+        while d_machine > 0 and d_parts > 0:
+            part_from = 0
+            part_to = 0
+            for part in range(self.parts):
+                flag = 0
+                cell_of_part = self.solution[1][part]
+                for cur_cell in self.solution[1]:
+                    if cell_of_part == cur_cell:
+                        flag += 1
+                if flag == 1:
+                    continue
+                for cell in range(1, self.cells+1):
+                    if cell_of_part == self.solution[1][cell]:
+                        continue
+                    new_eff = self.count_new_efficiency_p(part, cell)
+                    if new_eff > self.efficiency:
+                        d_parts = new_eff - self.efficiency
+                        part_from = self.solution[1][part]
+                        part_to = cell
+            machine_from = 0
+            machine_to = 0
+            for machine in range(self.machines):
+                flag = 0
+                cell_of_machine = self.solution[0][machine]
+                for cur_cell in self.solution[0]:
+                    if cell_of_machine == cur_cell:
+                        flag += 1
+                if flag == 1:
+                    continue
+                for cell in range(1, self.cells+1):
+                    if cell_of_machine == self.solution[0][cell]:
+                        continue
+                    new_eff = self.count_new_efficiency_m(machine, cell)
+                    if new_eff > self.efficiency:
+                        d_machine = new_eff - self.efficiency
+                        machine_from = self.solution[0][machine]
+                        machine_to = cell
+            if d_machine == 0 and d_parts == 0:
+                break
+            elif d_parts > d_machine:
+                self.solution[1][part_from] = part_to
+            else:
+                self.solution[0][machine_from] = machine_to
 
 
-matrix = readFile('test.txt')
-vnd = GeneralVNS(matrix, countOnes(matrix))
-vnd.generateConfigsUniform()
-print(vnd.solution)
-vnd.countEfficiency()
-print(vnd.efficiency)
-vnd.shaking()
-print(vnd.solution, vnd.ones)
-vnd.countEfficiency()
+matrix = read_file('test.txt')
+vnd = GeneralVNS(matrix, count_ones(matrix))
+vnd.generate_configs_uniform()
+vnd.count_efficiency()
 print(vnd.efficiency)
