@@ -18,7 +18,7 @@ def count_ones(matrix_):
     zeroes = 0
     ones = 0
     for i in range(len(matrix_)):
-        for j in range(len(matrix[0])):
+        for j in range(len(matrix_[0])):
             if matrix_[i][j] == 1:
                 ones += 1
     return ones
@@ -113,6 +113,7 @@ class GeneralVNS:
         d_machine = 1
         d_parts = 1
         while d_machine > 0 and d_parts > 0:
+            d_machine, d_parts = 0, 0
             part_from = 0
             part_to = 0
             for part in range(self.parts):
@@ -160,5 +161,8 @@ class GeneralVNS:
 matrix = read_file('test.txt')
 vns = GeneralVNS(matrix, count_ones(matrix))
 vns.generate_configs_uniform()
+vns.count_efficiency()
+print(vns.efficiency)
+vns.improve_solution()
 vns.count_efficiency()
 print(vns.efficiency)
