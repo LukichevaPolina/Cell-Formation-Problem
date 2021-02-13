@@ -126,9 +126,10 @@ class GeneralVNS:
         cell_to_divide = random.randint(1, boarder)
         m_in_cell = self.elementsInCell(self.machines, cell_to_divide, 0)
         p_in_cell = self.elementsInCell(self.parts, cell_to_divide, 1)
-        if len(m_in_cell) == 1 or len(p_in_cell) == 1:
+        if len(m_in_cell) <= 1 or len(p_in_cell) <= 1:
             return
         self.cells += 1
+
         machine_id_to_divide = random.randint(1, len(m_in_cell) - 1)
         part_id_to_divide = random.randint(1, len(p_in_cell) - 1)
         for i in m_in_cell[machine_id_to_divide:]:
@@ -207,13 +208,13 @@ class GeneralVNS:
 
 
 
-matrix = read_file('carrie28.txt')
+matrix = read_file('zolf50.txt')
 vns = GeneralVNS(matrix, count_ones(matrix))
 
 vns.generate_configs_uniform()
 vns.count_efficiency()
 new_vns = GeneralVNS(matrix, count_ones(matrix))
-for j in range(200):
+for j in range(100):
     new_vns.generate_configs_uniform()
     new_vns.count_efficiency()
     if new_vns.efficiency > vns.efficiency:
@@ -223,7 +224,7 @@ for j in range(200):
 vns.improve_solution()
 vns.count_efficiency()
 new_vns = deepcopy(vns)
-for i in range(20):
+for i in range(500):
     new_vns.shaking()
     new_vns.improve_solution()
     new_vns.count_efficiency()
