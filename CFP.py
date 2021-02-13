@@ -158,7 +158,7 @@ class GeneralVNS:
 
 
 matrix = read_file('test.txt')
-vnd = GeneralVNS(matrix, count_ones(matrix))
-vnd.generate_configs_uniform()
-vnd.count_efficiency()
-print(vnd.efficiency)
+vns = GeneralVNS(matrix, count_ones(matrix))
+vns.generate_configs_uniform()
+vns.count_efficiency()
+print(vns.efficiency)
